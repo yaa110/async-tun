@@ -1,6 +1,6 @@
 [package]
 name = "async-tun"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Navid <yaa110@gmail.com>"]
 edition = "2018"
 homepage = "https://github.com/yaa110/async-tun"
@@ -10,7 +10,7 @@ license = "MIT OR Apache-2.0"
 readme = "README.md"
 description = "Asynchronous allocation of TUN/TAP devices"
 categories = ["asynchronous", "network-programming"]
-keywords = ["tun", "tap", "async", "interface", "device"]
+keywords = ["tun", "tap", "async", "async-std", "interface"]
 
 [dependencies]
 async-std = "1.6"

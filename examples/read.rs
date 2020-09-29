@@ -2,11 +2,15 @@ use async_std::os::unix::io::AsRawFd;
 use async_std::prelude::*;
 use async_std::task;
 use async_tun::result::Result;
-use async_tun::{Kind, Params, Tun};
+use async_tun::TunBuilder;
 
 async fn async_main() -> Result<()> {
-    let params = Params::new("", Kind::Tun, false);
-    let mut tun = Tun::new(params).await?;
+    let mut tun = TunBuilder::new()
+        .name("")
+        .tap(false)
+        .packet_info(false)
+        .try_build()
+        .await?;
 
     println!("tun created, name: {}, fd: {}", tun.name(), tun.as_raw_fd());
 

@@ -3,13 +3,12 @@ mod linux {
     pub(crate) mod ifreq;
 }
 
+mod builder;
 mod interface;
-mod kind;
 mod params;
 mod tun;
 
 pub mod result;
 
-pub use self::kind::Kind;
-pub use self::params::Params;
+pub use self::builder::TunBuilder;
 pub use self::tun::Tun;

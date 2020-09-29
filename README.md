@@ -6,18 +6,22 @@ Asynchronous allocation of TUN/TAP devices in Rust using [`async-std`](https://c
 
 ## Getting Started
 
-- Create a tun device and read from it in a loop:
+- Create a tun device using `TunBuilder` and read from it in a loop:
 
 ```rust
 use async_std::os::unix::io::AsRawFd;
 use async_std::prelude::*;
 use async_std::task;
 use async_tun::result::Result;
-use async_tun::{Kind, Params, Tun};
+use async_tun::TunBuilder;
 
 async fn async_main() -> Result<()> {
-    let params = Params::new("", Kind::Tun, false);
-    let mut tun = Tun::new(params).await?;
+    let mut tun = TunBuilder::new()
+        .name("")            // If name is empty, then it is set by kernel.
+        .tap(false)          // false (default): TUN, true: TAP.
+        .packet_info(false)  // false: IFF_NO_PI, default is true.
+        .try_build()
+        .await?;
 
     println!("tun created, name: {}, fd: {}", tun.name(), tun.as_raw_fd());
 
@@ -50,6 +54,12 @@ fn main() -> Result<()> {
 
 ```bash
 ➜  ping 10.0.0.2
+```
+
+- Analyze the network traffic:
+
+```
+➜  sudo tshark -i <tun-name>
 ```
 
 ## Supported Platforms

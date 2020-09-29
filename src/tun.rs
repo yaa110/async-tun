@@ -13,7 +13,7 @@ use async_std::os::unix::io::{AsRawFd, FromRawFd};
 use nix::errno::Errno;
 use std::ops::{Deref, DerefMut};
 
-/// Represents a Tun/Tap device.
+/// Represents a Tun/Tap device. Use `TunBuilder` to create a new instance of `Tun`.
 pub struct Tun {
     file: File,
     name: String,
@@ -44,7 +44,7 @@ impl Tun {
     }
 
     /// Creates a new instance of Tun/Tap device.
-    pub async fn new(params: Params) -> Result<Self> {
+    pub(super) async fn new(params: Params) -> Result<Self> {
         let (file, name) = Self::alloc(params).await?;
         Ok(Self { file, name })
     }
@@ -55,13 +55,18 @@ impl Tun {
     }
 }
 
-#[cfg(target_os = "linux")]
 impl Clone for Tun {
+    #[cfg(target_os = "linux")]
     fn clone(&self) -> Self {
         Self {
             file: unsafe { File::from_raw_fd(self.file.as_raw_fd()) },
             name: self.name.clone(),
         }
+    }
+
+    #[cfg(not(any(target_os = "linux")))]
+    fn clone(&self) -> Self {
+        unimplemented!()
     }
 }
 
