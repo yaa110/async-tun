@@ -13,7 +13,7 @@ use async_std::os::unix::io::{AsRawFd, FromRawFd};
 use nix::errno::Errno;
 use std::ops::{Deref, DerefMut};
 
-/// Represents a Tun/Tap device. Use `TunBuilder` to create a new instance of `Tun`.
+/// Represents a Tun/Tap device. Use [`TunBuilder`](struct.TunBuilder.html) to create a new instance of [`Tun`](struct.Tun.html).
 pub struct Tun {
     file: File,
     name: String,

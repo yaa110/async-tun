@@ -4,7 +4,7 @@ use super::tun::Tun;
 use core::convert::From;
 use libc::{IFF_NO_PI, IFF_TAP, IFF_TUN};
 
-/// Represents a factory to build new instances of `Tun`.
+/// Represents a factory to build new instances of [`Tun`](struct.Tun.html).
 pub struct TunBuilder<'a> {
     name: &'a str,
     is_tap: bool,
@@ -12,7 +12,7 @@ pub struct TunBuilder<'a> {
 }
 
 impl<'a> TunBuilder<'a> {
-    /// Creates a new instance of `TunBuilder`.
+    /// Creates a new instance of [`TunBuilder`](struct.TunBuilder.html).
     pub fn new() -> Self {
         Self {
             name: "",
@@ -39,7 +39,7 @@ impl<'a> TunBuilder<'a> {
         self
     }
 
-    /// Builds a new instance of `Tun`.
+    /// Builds a new instance of [`Tun`](struct.Tun.html).
     pub async fn try_build(self) -> Result<Tun> {
         Tun::new(self.into()).await
     }
