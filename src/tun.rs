@@ -33,6 +33,12 @@ impl Tun {
         if let Some(mtu) = params.mtu {
             iface.set_mtu(mtu)?;
         }
+        if let Some(owner) = params.owner {
+            iface.owner(owner)?;
+        }
+        if let Some(group) = params.group {
+            iface.group(group)?;
+        }
         Ok((file, iface))
     }
 

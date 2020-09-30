@@ -81,7 +81,7 @@ fn main() -> Result<()> {
 - [x] Tap
 - [x] No Packet Info
 - [x] MTU
-- [ ] Multi-Queue
-- [ ] Owner
-- [ ] Group
+- [x] Owner
+- [x] Group
 - [ ] Persistent
+- [ ] Multi-Queue

@@ -2,6 +2,8 @@ use super::request::ifreq;
 use crate::result::Result;
 
 nix::ioctl_write_int!(tunsetiff, b'T', 202);
+nix::ioctl_write_int!(tunsetowner, b'T', 204);
+nix::ioctl_write_int!(tunsetgroup, b'T', 206);
 nix::ioctl_write_ptr_bad!(siocsifmtu, libc::SIOCSIFMTU, ifreq);
 nix::ioctl_read_bad!(siocgifmtu, libc::SIOCGIFMTU, ifreq);
 
@@ -32,6 +34,16 @@ impl Interface {
         let mut req = ifreq::new(self.name());
         unsafe { siocgifmtu(self.socket, &mut req) }?;
         Ok(unsafe { req.ifr_ifru.ifru_mtu })
+    }
+
+    pub fn owner(&self, owner: i32) -> Result<()> {
+        unsafe { tunsetowner(self.fd, owner as _) }?;
+        Ok(())
+    }
+
+    pub fn group(&self, group: i32) -> Result<()> {
+        unsafe { tunsetgroup(self.fd, group as _) }?;
+        Ok(())
     }
 
     pub fn set_mtu(&mut self, mtu: i32) -> Result<()> {

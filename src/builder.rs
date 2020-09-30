@@ -9,14 +9,18 @@ use libc::{IFF_NO_PI, IFF_TAP, IFF_TUN};
 pub struct TunBuilder<'a> {
     name: &'a str,
     is_tap: bool,
-    mtu: Option<i32>,
     packet_info: bool,
+    mtu: Option<i32>,
+    owner: Option<i32>,
+    group: Option<i32>,
 }
 
 impl<'a> Default for TunBuilder<'a> {
     fn default() -> Self {
         Self {
             name: "",
+            owner: None,
+            group: None,
             is_tap: false,
             mtu: None,
             packet_info: true,
@@ -54,6 +58,18 @@ impl<'a> TunBuilder<'a> {
         self
     }
 
+    /// Sets the owner of device.
+    pub fn owner(mut self, owner: i32) -> Self {
+        self.owner = Some(owner);
+        self
+    }
+
+    /// Sets the group of device.
+    pub fn group(mut self, group: i32) -> Self {
+        self.group = Some(group);
+        self
+    }
+
     /// Builds a new instance of [`Tun`](struct.Tun.html).
     pub async fn try_build(self) -> Result<Tun> {
         Tun::new(self.into()).await
@@ -77,6 +93,8 @@ impl<'a> From<TunBuilder<'a>> for Params {
                 flags
             },
             mtu: builder.mtu,
+            owner: builder.owner,
+            group: builder.group,
         }
     }
 
