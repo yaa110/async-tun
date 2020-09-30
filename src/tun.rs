@@ -10,7 +10,6 @@ use async_std::fs::OpenOptions;
 #[cfg(target_os = "linux")]
 use async_std::os::unix::io::{AsRawFd, FromRawFd};
 #[cfg(target_os = "linux")]
-use nix::errno::Errno;
 use std::ops::{Deref, DerefMut};
 
 /// Represents a Tun/Tap device. Use [`TunBuilder`](struct.TunBuilder.html) to create a new instance of [`Tun`](struct.Tun.html).
@@ -28,13 +27,7 @@ impl Tun {
             .open("/dev/net/tun")
             .await?;
         let iface = new_interface::<ifreq>(params)?;
-        unsafe { tunsetiff(file.as_raw_fd(), &iface as *const _ as _) }.and_then(|ret| {
-            if ret < 0 {
-                Err(Errno::from_i32(ret).into())
-            } else {
-                Ok(())
-            }
-        })?;
+        unsafe { tunsetiff(file.as_raw_fd(), &iface as *const _ as _) }?;
         Ok((file, iface.name()))
     }
 
