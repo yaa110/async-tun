@@ -2,6 +2,7 @@ use super::request::ifreq;
 use crate::result::Result;
 
 nix::ioctl_write_int!(tunsetiff, b'T', 202);
+nix::ioctl_write_int!(tunsetpersist, b'T', 203);
 nix::ioctl_write_int!(tunsetowner, b'T', 204);
 nix::ioctl_write_int!(tunsetgroup, b'T', 206);
 nix::ioctl_write_ptr_bad!(siocsifmtu, libc::SIOCSIFMTU, ifreq);
@@ -43,6 +44,11 @@ impl Interface {
 
     pub fn group(&self, group: i32) -> Result<()> {
         unsafe { tunsetgroup(self.fd, group as _) }?;
+        Ok(())
+    }
+
+    pub fn persist(&self) -> Result<()> {
+        unsafe { tunsetpersist(self.fd, 1) }?;
         Ok(())
     }
 

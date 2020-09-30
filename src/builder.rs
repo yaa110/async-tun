@@ -10,6 +10,7 @@ pub struct TunBuilder<'a> {
     name: &'a str,
     is_tap: bool,
     packet_info: bool,
+    persist: bool,
     mtu: Option<i32>,
     owner: Option<i32>,
     group: Option<i32>,
@@ -22,6 +23,7 @@ impl<'a> Default for TunBuilder<'a> {
             owner: None,
             group: None,
             is_tap: false,
+            persist: false,
             mtu: None,
             packet_info: true,
         }
@@ -70,6 +72,12 @@ impl<'a> TunBuilder<'a> {
         self
     }
 
+    /// Makes the device persistent. Default is `false`.
+    pub fn persist(mut self, persist: bool) -> Self {
+        self.persist = persist;
+        self
+    }
+
     /// Builds a new instance of [`Tun`](struct.Tun.html).
     pub async fn try_build(self) -> Result<Tun> {
         Tun::new(self.into()).await
@@ -92,6 +100,7 @@ impl<'a> From<TunBuilder<'a>> for Params {
                 }
                 flags
             },
+            persist: builder.persist,
             mtu: builder.mtu,
             owner: builder.owner,
             group: builder.group,

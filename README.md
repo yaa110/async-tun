@@ -56,9 +56,10 @@ fn main() -> Result<()> {
 ➜  ping 10.0.0.2
 ```
 
-- Analyze the network traffic:
+- Display devices and analyze the network traffic:
 
 ```
+➜  ip tuntap
 ➜  sudo tshark -i <tun-name>
 ```
 
@@ -83,5 +84,5 @@ fn main() -> Result<()> {
 - [x] MTU
 - [x] Owner
 - [x] Group
-- [ ] Persistent
+- [x] Persistent
 - [ ] Multi-Queue

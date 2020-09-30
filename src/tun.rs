@@ -39,6 +39,9 @@ impl Tun {
         if let Some(group) = params.group {
             iface.group(group)?;
         }
+        if params.persist {
+            iface.persist()?;
+        }
         Ok((file, iface))
     }
 
