@@ -1,6 +1,7 @@
-use super::params::Params;
 use super::result::Result;
 use super::tun::Tun;
+#[cfg(target_os = "linux")]
+use crate::linux::params::Params;
 use core::convert::From;
 use libc::{IFF_NO_PI, IFF_TAP, IFF_TUN};
 
@@ -8,17 +9,25 @@ use libc::{IFF_NO_PI, IFF_TAP, IFF_TUN};
 pub struct TunBuilder<'a> {
     name: &'a str,
     is_tap: bool,
+    mtu: Option<i32>,
     packet_info: bool,
+}
+
+impl<'a> Default for TunBuilder<'a> {
+    fn default() -> Self {
+        Self {
+            name: "",
+            is_tap: false,
+            mtu: None,
+            packet_info: true,
+        }
+    }
 }
 
 impl<'a> TunBuilder<'a> {
     /// Creates a new instance of [`TunBuilder`](struct.TunBuilder.html).
     pub fn new() -> Self {
-        Self {
-            name: "",
-            is_tap: false,
-            packet_info: true,
-        }
+        Default::default()
     }
 
     /// Sets the name of device (max length: 16 characters), if it is empty, then device name is set by kernel. Default value is empty.
@@ -36,6 +45,12 @@ impl<'a> TunBuilder<'a> {
     /// If `packet_info` is false, then `IFF_NO_PI` flag is set. Default value is `true`.
     pub fn packet_info(mut self, packet_info: bool) -> Self {
         self.packet_info = packet_info;
+        self
+    }
+
+    /// Sets the MTU of device.
+    pub fn mtu(mut self, mtu: i32) -> Self {
+        self.mtu = Some(mtu);
         self
     }
 
@@ -61,6 +76,7 @@ impl<'a> From<TunBuilder<'a>> for Params {
                 }
                 flags
             },
+            mtu: builder.mtu,
         }
     }
 

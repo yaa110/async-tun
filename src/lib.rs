@@ -1,11 +1,11 @@
 #[cfg(target_os = "linux")]
 mod linux {
-    pub(crate) mod ifreq;
+    pub(crate) mod interface;
+    pub(crate) mod params;
+    pub(crate) mod request;
 }
 
 mod builder;
-mod interface;
-mod params;
 mod tun;
 
 pub mod result;

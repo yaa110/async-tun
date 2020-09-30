@@ -3,21 +3,14 @@
 #![allow(non_snake_case)]
 #![allow(dead_code)]
 
-use crate::interface::Interface;
-use crate::params::Params;
-use crate::result::Result;
-use nix::ioctl_write_int;
 use std::mem;
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
-ioctl_write_int!(tunsetiff, b'T', 202);
-
-impl Interface for ifreq {
-    fn new(params: Params) -> Result<Self> {
+impl ifreq {
+    pub(super) fn new(name: &str) -> Self {
         let mut req: ifreq = unsafe { mem::zeroed() };
-        req.ifr_ifru.ifru_flags = params.flags;
-        if let Some(name) = params.name {
+        if !name.is_empty() {
             let mut ifname: [i8; IFNAMSIZ as _] = [0; IFNAMSIZ as _];
             for (i, c) in name.as_bytes().iter().enumerate() {
                 if i > ifname.len() - 1 {
@@ -27,10 +20,10 @@ impl Interface for ifreq {
             }
             req.ifr_ifrn.ifrn_name = ifname;
         }
-        Ok(req)
+        req
     }
 
-    fn name(&self) -> String {
+    pub(super) fn name(&self) -> String {
         let mut name = String::new();
         for i in 0..IFNAMSIZ as _ {
             let c = unsafe { self.ifr_ifrn.ifrn_name }[i] as u8 as char;

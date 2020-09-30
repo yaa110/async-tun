@@ -80,8 +80,8 @@ fn main() -> Result<()> {
 - [x] Tun
 - [x] Tap
 - [x] No Packet Info
+- [x] MTU
 - [ ] Multi-Queue
 - [ ] Owner
 - [ ] Group
-- [ ] MTU
 - [ ] Persistent

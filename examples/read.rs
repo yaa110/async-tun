@@ -9,10 +9,16 @@ async fn async_main() -> Result<()> {
         .name("")
         .tap(false)
         .packet_info(false)
+        .mtu(1350)
         .try_build()
         .await?;
 
-    println!("tun created, name: {}, fd: {}", tun.name(), tun.as_raw_fd());
+    println!(
+        "tun created, name: {}, fd: {}, mtu: {}",
+        tun.name(),
+        tun.as_raw_fd(),
+        tun.mtu().unwrap()
+    );
 
     let mut buf = [0u8; 1024];
     loop {

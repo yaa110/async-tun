@@ -3,4 +3,5 @@
 pub struct Params {
     pub name: Option<String>,
     pub flags: i16,
+    pub mtu: Option<i32>,
 }
