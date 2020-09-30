@@ -59,3 +59,9 @@ impl Interface {
         Ok(())
     }
 }
+
+impl Drop for Interface {
+    fn drop(&mut self) {
+        unsafe { libc::close(self.socket) };
+    }
+}
