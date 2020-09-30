@@ -1,15 +1,20 @@
 use super::request::ifreq;
+use crate::linux::address::Ipv4AddrExt;
 use crate::result::Result;
-use libc::{AF_INET, SIOCGIFFLAGS, SIOCGIFMTU, SIOCSIFFLAGS, SIOCSIFMTU, SOCK_DGRAM};
+use std::net::Ipv4Addr;
 
 nix::ioctl_write_int!(tunsetiff, b'T', 202);
 nix::ioctl_write_int!(tunsetpersist, b'T', 203);
 nix::ioctl_write_int!(tunsetowner, b'T', 204);
 nix::ioctl_write_int!(tunsetgroup, b'T', 206);
-nix::ioctl_write_ptr_bad!(siocsifmtu, SIOCSIFMTU, ifreq);
-nix::ioctl_write_ptr_bad!(siocsifflags, SIOCSIFFLAGS, ifreq);
-nix::ioctl_read_bad!(siocgifmtu, SIOCGIFMTU, ifreq);
-nix::ioctl_read_bad!(siocgifflags, SIOCGIFFLAGS, ifreq);
+nix::ioctl_write_ptr_bad!(siocsifmtu, libc::SIOCSIFMTU, ifreq);
+nix::ioctl_write_ptr_bad!(siocsifflags, libc::SIOCSIFFLAGS, ifreq);
+nix::ioctl_write_ptr_bad!(siocsifaddr, libc::SIOCSIFADDR, ifreq);
+nix::ioctl_write_ptr_bad!(siocsifdstaddr, libc::SIOCSIFDSTADDR, ifreq);
+nix::ioctl_read_bad!(siocgifmtu, libc::SIOCGIFMTU, ifreq);
+nix::ioctl_read_bad!(siocgifflags, libc::SIOCGIFFLAGS, ifreq);
+nix::ioctl_read_bad!(siocgifaddr, libc::SIOCGIFADDR, ifreq);
+nix::ioctl_read_bad!(siocgifdstaddr, libc::SIOCGIFDSTADDR, ifreq);
 
 #[derive(Clone)]
 pub struct Interface {
@@ -25,7 +30,7 @@ impl Interface {
         unsafe { tunsetiff(fd, &req as *const _ as _) }?;
         Ok(Interface {
             fd,
-            socket: unsafe { libc::socket(AF_INET, SOCK_DGRAM, 0) },
+            socket: unsafe { libc::socket(libc::AF_INET, libc::SOCK_DGRAM, 0) },
             name: req.name(),
         })
     }
@@ -43,6 +48,28 @@ impl Interface {
             unsafe { siocgifmtu(self.socket, &mut req) }?;
         }
         Ok(unsafe { req.ifr_ifru.ifru_mtu })
+    }
+
+    pub fn address(&self, address: Option<Ipv4Addr>) -> Result<Ipv4Addr> {
+        let mut req = ifreq::new(self.name());
+        if let Some(address) = address {
+            req.ifr_ifru.ifru_addr = address.to_address();
+            unsafe { siocsifaddr(self.socket, &req) }?;
+            return Ok(address);
+        }
+        unsafe { siocgifaddr(self.socket, &mut req) }?;
+        Ok(unsafe { Ipv4Addr::from_address(req.ifr_ifru.ifru_addr) })
+    }
+
+    pub fn destination(&self, dst: Option<Ipv4Addr>) -> Result<Ipv4Addr> {
+        let mut req = ifreq::new(self.name());
+        if let Some(dst) = dst {
+            req.ifr_ifru.ifru_dstaddr = dst.to_address();
+            unsafe { siocsifdstaddr(self.socket, &req) }?;
+            return Ok(dst);
+        }
+        unsafe { siocgifdstaddr(self.socket, &mut req) }?;
+        Ok(unsafe { Ipv4Addr::from_address(req.ifr_ifru.ifru_dstaddr) })
     }
 
     pub fn flags(&self, flags: Option<i16>) -> Result<i16> {
