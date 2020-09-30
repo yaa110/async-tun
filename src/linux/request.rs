@@ -8,7 +8,7 @@ use std::mem;
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
 impl ifreq {
-    pub(super) fn new(name: &str) -> Self {
+    pub fn new(name: &str) -> Self {
         let mut req: ifreq = unsafe { mem::zeroed() };
         if !name.is_empty() {
             let mut ifname: [i8; IFNAMSIZ as _] = [0; IFNAMSIZ as _];
@@ -23,7 +23,7 @@ impl ifreq {
         req
     }
 
-    pub(super) fn name(&self) -> String {
+    pub fn name(&self) -> String {
         let mut name = String::new();
         for i in 0..IFNAMSIZ as _ {
             let c = unsafe { self.ifr_ifrn.ifrn_name }[i] as u8 as char;

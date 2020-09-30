@@ -7,6 +7,7 @@ use async_std::fs::File;
 use async_std::fs::OpenOptions;
 #[cfg(target_os = "linux")]
 use async_std::os::unix::io::{AsRawFd, FromRawFd};
+use std::net::Ipv4Addr;
 use std::ops::{Deref, DerefMut};
 
 /// Represents a Tun/Tap device. Use [`TunBuilder`](struct.TunBuilder.html) to create a new instance of [`Tun`](struct.Tun.html).
@@ -37,6 +38,18 @@ impl Tun {
         if let Some(group) = params.group {
             iface.group(group)?;
         }
+        if let Some(address) = params.address {
+            iface.address(Some(address))?;
+        }
+        if let Some(netmask) = params.netmask {
+            iface.netmask(Some(netmask))?;
+        }
+        if let Some(destination) = params.destination {
+            iface.destination(Some(destination))?;
+        }
+        if let Some(broadcast) = params.broadcast {
+            iface.broadcast(Some(broadcast))?;
+        }
         if params.persist {
             iface.persist()?;
         }
@@ -52,7 +65,7 @@ impl Tun {
     }
 
     /// Creates a new instance of Tun/Tap device.
-    pub(super) async fn new(params: Params) -> Result<Self> {
+    pub(crate) async fn new(params: Params) -> Result<Self> {
         let (file, iface) = Self::alloc(params).await?;
         Ok(Self { file, iface })
     }
@@ -65,6 +78,26 @@ impl Tun {
     /// Returns the value of MTU.
     pub fn mtu(&self) -> Result<i32> {
         self.iface.mtu(None)
+    }
+
+    /// Returns the IPv4 address of MTU.
+    pub fn address(&self) -> Result<Ipv4Addr> {
+        self.iface.address(None)
+    }
+
+    /// Returns the IPv4 destination address of MTU.
+    pub fn destination(&self) -> Result<Ipv4Addr> {
+        self.iface.destination(None)
+    }
+
+    /// Returns the IPv4 broadcast address of MTU.
+    pub fn broadcast(&self) -> Result<Ipv4Addr> {
+        self.iface.broadcast(None)
+    }
+
+    /// Returns the IPv4 netmask address of MTU.
+    pub fn netmask(&self) -> Result<Ipv4Addr> {
+        self.iface.netmask(None)
     }
 
     /// Returns the flags of MTU.

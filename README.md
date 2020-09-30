@@ -14,6 +14,7 @@ use async_std::prelude::*;
 use async_std::task;
 use async_tun::result::Result;
 use async_tun::TunBuilder;
+use std::net::Ipv4Addr;
 
 async fn async_main() -> Result<()> {
     let mut tun = TunBuilder::new()
@@ -44,7 +45,7 @@ fn main() -> Result<()> {
 ➜  sudo -E /path/to/cargo run
 ```
 
-- Set the address of device:
+- Set the address of device (address and netmask could also be set using `TunBuilder`):
 
 ```bash
 ➜  sudo ip a add 10.0.0.1/24 dev <tun-name>

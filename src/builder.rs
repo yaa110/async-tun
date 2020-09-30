@@ -4,6 +4,7 @@ use super::tun::Tun;
 use crate::linux::params::Params;
 use core::convert::From;
 use libc::{IFF_NO_PI, IFF_TAP, IFF_TUN};
+use std::net::Ipv4Addr;
 
 /// Represents a factory to build new instances of [`Tun`](struct.Tun.html).
 pub struct TunBuilder<'a> {
@@ -15,6 +16,10 @@ pub struct TunBuilder<'a> {
     mtu: Option<i32>,
     owner: Option<i32>,
     group: Option<i32>,
+    address: Option<Ipv4Addr>,
+    destination: Option<Ipv4Addr>,
+    broadcast: Option<Ipv4Addr>,
+    netmask: Option<Ipv4Addr>,
 }
 
 impl<'a> Default for TunBuilder<'a> {
@@ -28,6 +33,10 @@ impl<'a> Default for TunBuilder<'a> {
             up: false,
             mtu: None,
             packet_info: true,
+            address: None,
+            destination: None,
+            broadcast: None,
+            netmask: None,
         }
     }
 }
@@ -74,6 +83,30 @@ impl<'a> TunBuilder<'a> {
         self
     }
 
+    /// Sets IPv4 address of device.
+    pub fn address(mut self, address: Ipv4Addr) -> Self {
+        self.address = Some(address);
+        self
+    }
+
+    /// Sets IPv4 destination address of device.
+    pub fn destination(mut self, dst: Ipv4Addr) -> Self {
+        self.destination = Some(dst);
+        self
+    }
+
+    /// Sets IPv4 broadcast address of device.
+    pub fn broadcast(mut self, broadcast: Ipv4Addr) -> Self {
+        self.broadcast = Some(broadcast);
+        self
+    }
+
+    /// Sets IPv4 netmask address of device.
+    pub fn netmask(mut self, netmask: Ipv4Addr) -> Self {
+        self.netmask = Some(netmask);
+        self
+    }
+
     /// Makes the device persistent.
     pub fn persist(mut self) -> Self {
         self.persist = true;
@@ -113,6 +146,10 @@ impl<'a> From<TunBuilder<'a>> for Params {
             mtu: builder.mtu,
             owner: builder.owner,
             group: builder.group,
+            address: builder.address,
+            destination: builder.destination,
+            broadcast: builder.broadcast,
+            netmask: builder.netmask,
         }
     }
 

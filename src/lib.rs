@@ -1,8 +1,9 @@
 #[cfg(target_os = "linux")]
 mod linux {
-    pub(crate) mod interface;
-    pub(crate) mod params;
-    pub(crate) mod request;
+    pub mod address;
+    pub mod interface;
+    pub mod params;
+    pub mod request;
 }
 
 mod builder;
