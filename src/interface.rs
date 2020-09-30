@@ -7,7 +7,3 @@ pub(crate) trait Interface {
         Self: Sized;
     fn name(&self) -> String;
 }
-
-pub(crate) fn new_interface<T: Interface>(params: Params) -> Result<T> {
-    T::new(params)
-}

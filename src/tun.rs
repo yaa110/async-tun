@@ -1,4 +1,3 @@
-use crate::interface::new_interface;
 use crate::interface::Interface;
 #[cfg(target_os = "linux")]
 use crate::linux::ifreq::{ifreq, tunsetiff};
@@ -26,7 +25,7 @@ impl Tun {
             .write(true)
             .open("/dev/net/tun")
             .await?;
-        let iface = new_interface::<ifreq>(params)?;
+        let iface = ifreq::new(params)?;
         unsafe { tunsetiff(file.as_raw_fd(), &iface as *const _ as _) }?;
         Ok((file, iface.name()))
     }

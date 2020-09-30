@@ -14,8 +14,8 @@ async fn async_main() -> Result<()> {
 
     println!("tun created, name: {}, fd: {}", tun.name(), tun.as_raw_fd());
 
+    let mut buf = [0u8; 1024];
     loop {
-        let mut buf = [0u8; 1024];
         let n = tun.read(&mut buf).await?;
         println!("reading {} bytes: {:?}", n, &buf[..n]);
     }
