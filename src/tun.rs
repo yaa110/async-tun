@@ -7,25 +7,31 @@ use async_std::fs::File;
 use async_std::fs::OpenOptions;
 #[cfg(target_os = "linux")]
 use async_std::os::unix::io::{AsRawFd, FromRawFd};
+use async_std::sync::Arc;
 use std::net::Ipv4Addr;
 use std::ops::{Deref, DerefMut};
 
 /// Represents a Tun/Tap device. Use [`TunBuilder`](struct.TunBuilder.html) to create a new instance of [`Tun`](struct.Tun.html).
 pub struct Tun {
     file: File,
-    iface: Interface,
+    iface: Arc<Interface>,
 }
 
 impl Tun {
     #[cfg(target_os = "linux")]
-    async fn alloc(params: Params) -> Result<(File, Interface)> {
-        let file = OpenOptions::new()
-            .read(true)
-            .write(true)
-            .open("/dev/net/tun")
-            .await?;
+    async fn alloc(params: Params, queues: usize) -> Result<(Vec<File>, Interface)> {
+        let mut files = Vec::with_capacity(queues);
+        for _ in 0..queues {
+            files.push(
+                OpenOptions::new()
+                    .read(true)
+                    .write(true)
+                    .open("/dev/net/tun")
+                    .await?,
+            );
+        }
         let iface = Interface::new(
-            file.as_raw_fd(),
+            files.iter().map(|file| file.as_raw_fd()).collect(),
             params.name.as_deref().unwrap_or_default(),
             params.flags,
         )?;
@@ -56,7 +62,7 @@ impl Tun {
         if params.up {
             iface.flags(Some(libc::IFF_UP as i16 | libc::IFF_RUNNING as i16))?;
         }
-        Ok((file, iface))
+        Ok((files, iface))
     }
 
     #[cfg(not(any(target_os = "linux")))]
@@ -66,8 +72,26 @@ impl Tun {
 
     /// Creates a new instance of Tun/Tap device.
     pub(crate) async fn new(params: Params) -> Result<Self> {
-        let (file, iface) = Self::alloc(params).await?;
-        Ok(Self { file, iface })
+        let (files, iface) = Self::alloc(params, 1).await?;
+        Ok(Self {
+            file: files.into_iter().next().unwrap(),
+            iface: Arc::new(iface),
+        })
+    }
+
+    /// Creates a new instance of Tun/Tap device.
+    #[cfg(target_os = "linux")]
+    pub(crate) async fn new_mq(params: Params, queues: usize) -> Result<Vec<Self>> {
+        let (files, iface) = Self::alloc(params, queues).await?;
+        let mut tuns = Vec::with_capacity(queues);
+        let iface = Arc::new(iface);
+        for file in files.into_iter() {
+            tuns.push(Self {
+                file,
+                iface: iface.clone(),
+            })
+        }
+        Ok(tuns)
     }
 
     /// Returns the name of Tun/Tap device.

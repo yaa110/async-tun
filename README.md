@@ -1,6 +1,6 @@
 # Async TUN/TAP
 
-[![Build](https://github.com/yaa110/async-tun/workflows/Build/badge.svg)](https://github.com/yaa110/async-tun/actions) [![crates.io](https://img.shields.io/crates/v/async-tun.svg)](https://crates.io/crates/async-tun) [![Documentation](https://img.shields.io/badge/docs-async--tun-blue.svg)](https://docs.rs/async-tun)
+[![Build](https://github.com/yaa110/async-tun/workflows/Build/badge.svg)](https://github.com/yaa110/async-tun/actions) [![crates.io](https://img.shields.io/crates/v/async-tun.svg)](https://crates.io/crates/async-tun) [![Documentation](https://img.shields.io/badge/docs-async--tun-blue.svg)](https://docs.rs/async-tun) [![examples](https://img.shields.io/badge/examples-async--tun-blue.svg)](examples)
 
 Asynchronous allocation of TUN/TAP devices in Rust using [`async-std`](https://crates.io/crates/async-std).
 
@@ -18,11 +18,11 @@ use std::net::Ipv4Addr;
 
 async fn async_main() -> Result<()> {
     let mut tun = TunBuilder::new()
-        .name("")            // If name is empty, then it is set by kernel.
+        .name("")            // if name is empty, then it is set by kernel.
         .tap(false)          // false (default): TUN, true: TAP.
         .packet_info(false)  // false: IFF_NO_PI, default is true.
-        .up()                // Or set it up manually using `sudo ip link set <tun-name> up`.
-        .try_build()
+        .up()                // or set it up manually using `sudo ip link set <tun-name> up`.
+        .try_build()         // or `.try_build_mq(queues)` for multi-queue support.
         .await?;
 
     println!("tun created, name: {}, fd: {}", tun.name(), tun.as_raw_fd());
@@ -66,7 +66,7 @@ fn main() -> Result<()> {
 
 ## Supported Platforms
 
-- [x] Linux (without Multi-Queue)
+- [x] Linux
 - [ ] FreeBSD
 - [ ] OpenBSD
 - [ ] NetBSD

@@ -24,18 +24,23 @@ nix::ioctl_read_bad!(siocgifnetmask, libc::SIOCGIFNETMASK, ifreq);
 
 #[derive(Clone)]
 pub struct Interface {
-    fd: i32,
+    fds: Vec<i32>,
     socket: i32,
     name: String,
 }
 
 impl Interface {
-    pub fn new(fd: i32, name: &str, flags: i16) -> Result<Self> {
+    pub fn new(fds: Vec<i32>, name: &str, mut flags: i16) -> Result<Self> {
         let mut req = ifreq::new(name);
+        if fds.len() > 1 {
+            flags |= libc::IFF_MULTI_QUEUE as i16;
+        }
         req.ifr_ifru.ifru_flags = flags;
-        unsafe { tunsetiff(fd, &req as *const _ as _) }?;
+        for fd in fds.iter() {
+            unsafe { tunsetiff(*fd, &req as *const _ as _) }?;
+        }
         Ok(Interface {
-            fd,
+            fds,
             socket: unsafe { libc::socket(libc::AF_INET, libc::SOCK_DGRAM, 0) },
             name: req.name(),
         })
@@ -111,17 +116,23 @@ impl Interface {
     }
 
     pub fn owner(&self, owner: i32) -> Result<()> {
-        unsafe { tunsetowner(self.fd, owner as _) }?;
+        for fd in self.fds.iter() {
+            unsafe { tunsetowner(*fd, owner as _) }?;
+        }
         Ok(())
     }
 
     pub fn group(&self, group: i32) -> Result<()> {
-        unsafe { tunsetgroup(self.fd, group as _) }?;
+        for fd in self.fds.iter() {
+            unsafe { tunsetgroup(*fd, group as _) }?;
+        }
         Ok(())
     }
 
     pub fn persist(&self) -> Result<()> {
-        unsafe { tunsetpersist(self.fd, 1) }?;
+        for fd in self.fds.iter() {
+            unsafe { tunsetpersist(*fd, 1) }?;
+        }
         Ok(())
     }
 }
