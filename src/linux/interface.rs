@@ -1,12 +1,15 @@
 use super::request::ifreq;
 use crate::result::Result;
+use libc::{AF_INET, SIOCGIFFLAGS, SIOCGIFMTU, SIOCSIFFLAGS, SIOCSIFMTU, SOCK_DGRAM};
 
 nix::ioctl_write_int!(tunsetiff, b'T', 202);
 nix::ioctl_write_int!(tunsetpersist, b'T', 203);
 nix::ioctl_write_int!(tunsetowner, b'T', 204);
 nix::ioctl_write_int!(tunsetgroup, b'T', 206);
-nix::ioctl_write_ptr_bad!(siocsifmtu, libc::SIOCSIFMTU, ifreq);
-nix::ioctl_read_bad!(siocgifmtu, libc::SIOCGIFMTU, ifreq);
+nix::ioctl_write_ptr_bad!(siocsifmtu, SIOCSIFMTU, ifreq);
+nix::ioctl_write_ptr_bad!(siocsifflags, SIOCSIFFLAGS, ifreq);
+nix::ioctl_read_bad!(siocgifmtu, SIOCGIFMTU, ifreq);
+nix::ioctl_read_bad!(siocgifflags, SIOCGIFFLAGS, ifreq);
 
 #[derive(Clone)]
 pub struct Interface {
@@ -22,7 +25,7 @@ impl Interface {
         unsafe { tunsetiff(fd, &req as *const _ as _) }?;
         Ok(Interface {
             fd,
-            socket: unsafe { libc::socket(libc::AF_INET, libc::SOCK_DGRAM, 0) },
+            socket: unsafe { libc::socket(AF_INET, SOCK_DGRAM, 0) },
             name: req.name(),
         })
     }
@@ -31,10 +34,25 @@ impl Interface {
         self.name.as_str()
     }
 
-    pub fn mtu(&self) -> Result<i32> {
+    pub fn mtu(&self, mtu: Option<i32>) -> Result<i32> {
         let mut req = ifreq::new(self.name());
-        unsafe { siocgifmtu(self.socket, &mut req) }?;
+        if let Some(mtu) = mtu {
+            req.ifr_ifru.ifru_mtu = mtu;
+            unsafe { siocsifmtu(self.socket, &req) }?;
+        } else {
+            unsafe { siocgifmtu(self.socket, &mut req) }?;
+        }
         Ok(unsafe { req.ifr_ifru.ifru_mtu })
+    }
+
+    pub fn flags(&self, flags: Option<i16>) -> Result<i16> {
+        let mut req = ifreq::new(self.name());
+        unsafe { siocgifflags(self.socket, &mut req) }?;
+        if let Some(flags) = flags {
+            unsafe { req.ifr_ifru.ifru_flags |= flags };
+            unsafe { siocsifflags(self.socket, &req) }?;
+        }
+        Ok(unsafe { req.ifr_ifru.ifru_flags })
     }
 
     pub fn owner(&self, owner: i32) -> Result<()> {
@@ -49,13 +67,6 @@ impl Interface {
 
     pub fn persist(&self) -> Result<()> {
         unsafe { tunsetpersist(self.fd, 1) }?;
-        Ok(())
-    }
-
-    pub fn set_mtu(&mut self, mtu: i32) -> Result<()> {
-        let mut req = ifreq::new(self.name());
-        req.ifr_ifru.ifru_mtu = mtu;
-        unsafe { siocsifmtu(self.socket, &req) }?;
         Ok(())
     }
 }

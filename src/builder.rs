@@ -11,6 +11,7 @@ pub struct TunBuilder<'a> {
     is_tap: bool,
     packet_info: bool,
     persist: bool,
+    up: bool,
     mtu: Option<i32>,
     owner: Option<i32>,
     group: Option<i32>,
@@ -24,6 +25,7 @@ impl<'a> Default for TunBuilder<'a> {
             group: None,
             is_tap: false,
             persist: false,
+            up: false,
             mtu: None,
             packet_info: true,
         }
@@ -72,9 +74,15 @@ impl<'a> TunBuilder<'a> {
         self
     }
 
-    /// Makes the device persistent. Default is `false`.
-    pub fn persist(mut self, persist: bool) -> Self {
-        self.persist = persist;
+    /// Makes the device persistent.
+    pub fn persist(mut self) -> Self {
+        self.persist = true;
+        self
+    }
+
+    /// Sets up the device.
+    pub fn up(mut self) -> Self {
+        self.up = true;
         self
     }
 
@@ -101,6 +109,7 @@ impl<'a> From<TunBuilder<'a>> for Params {
                 flags
             },
             persist: builder.persist,
+            up: builder.up,
             mtu: builder.mtu,
             owner: builder.owner,
             group: builder.group,

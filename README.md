@@ -20,6 +20,7 @@ async fn async_main() -> Result<()> {
         .name("")            // If name is empty, then it is set by kernel.
         .tap(false)          // false (default): TUN, true: TAP.
         .packet_info(false)  // false: IFF_NO_PI, default is true.
+        .up()                // Or set it up manually using `sudo ip link set <tun-name> up`.
         .try_build()
         .await?;
 
@@ -43,10 +44,9 @@ fn main() -> Result<()> {
 ➜  sudo -E /path/to/cargo run
 ```
 
-- Set up the device:
+- Set the address of device:
 
 ```bash
-➜  sudo ip link set dev <tun-name> up
 ➜  sudo ip a add 10.0.0.1/24 dev <tun-name>
 ```
 
@@ -65,7 +65,7 @@ fn main() -> Result<()> {
 
 ## Supported Platforms
 
-- [x] Linux
+- [x] Linux (without Multi-Queue)
 - [ ] FreeBSD
 - [ ] OpenBSD
 - [ ] NetBSD
@@ -75,14 +75,3 @@ fn main() -> Result<()> {
 - [ ] Solaris
 - [ ] Windows
 - [ ] QNX
-
-## Supported Flags
-
-- [x] Tun
-- [x] Tap
-- [x] No Packet Info
-- [x] MTU
-- [x] Owner
-- [x] Group
-- [x] Persistent
-- [ ] Multi-Queue

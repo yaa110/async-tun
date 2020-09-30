@@ -4,11 +4,9 @@ use crate::linux::interface::Interface;
 use crate::linux::params::Params;
 use crate::result::Result;
 use async_std::fs::File;
-#[cfg(target_os = "linux")]
 use async_std::fs::OpenOptions;
 #[cfg(target_os = "linux")]
 use async_std::os::unix::io::{AsRawFd, FromRawFd};
-#[cfg(target_os = "linux")]
 use std::ops::{Deref, DerefMut};
 
 /// Represents a Tun/Tap device. Use [`TunBuilder`](struct.TunBuilder.html) to create a new instance of [`Tun`](struct.Tun.html).
@@ -25,13 +23,13 @@ impl Tun {
             .write(true)
             .open("/dev/net/tun")
             .await?;
-        let mut iface = Interface::new(
+        let iface = Interface::new(
             file.as_raw_fd(),
             params.name.as_deref().unwrap_or_default(),
             params.flags,
         )?;
         if let Some(mtu) = params.mtu {
-            iface.set_mtu(mtu)?;
+            iface.mtu(Some(mtu))?;
         }
         if let Some(owner) = params.owner {
             iface.owner(owner)?;
@@ -41,6 +39,9 @@ impl Tun {
         }
         if params.persist {
             iface.persist()?;
+        }
+        if params.up {
+            iface.flags(Some(libc::IFF_UP as i16 | libc::IFF_RUNNING as i16))?;
         }
         Ok((file, iface))
     }
@@ -63,7 +64,12 @@ impl Tun {
 
     /// Returns the value of MTU.
     pub fn mtu(&self) -> Result<i32> {
-        self.iface.mtu()
+        self.iface.mtu(None)
+    }
+
+    /// Returns the flags of MTU.
+    pub fn flags(&self) -> Result<i16> {
+        self.iface.flags(None)
     }
 }
 
