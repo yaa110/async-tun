@@ -124,7 +124,7 @@ impl<'a> TunBuilder<'a> {
         Tun::new(self.into()).await
     }
 
-    /// Builds a multiple instances of [`Tun`](struct.Tun.html) with `IFF_MULTI_QUEUE` flag.
+    /// Builds multiple instances of [`Tun`](struct.Tun.html) with `IFF_MULTI_QUEUE` flag.
     #[cfg(target_os = "linux")]
     pub async fn try_build_mq(self, queues: usize) -> Result<Vec<Tun>> {
         Tun::new_mq(self.into(), queues).await
