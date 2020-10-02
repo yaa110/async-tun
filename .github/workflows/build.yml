@@ -12,4 +12,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build the crate
-      run: cargo build
+      run: |
+        cargo build -j`nproc`
+        cargo build -j`nproc` --features use-tokio
