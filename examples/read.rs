@@ -6,7 +6,7 @@ use async_tun::TunBuilder;
 use std::net::Ipv4Addr;
 
 async fn async_main() -> Result<()> {
-    let mut tun = TunBuilder::new()
+    let tun = TunBuilder::new()
         .name("")
         .tap(false)
         .packet_info(false)
@@ -39,9 +39,11 @@ async fn async_main() -> Result<()> {
     println!("ping 10.1.0.2 to test");
     println!("---------------------");
 
+    let mut reader = tun.reader();
+
     let mut buf = [0u8; 1024];
     loop {
-        let n = tun.read(&mut buf).await?;
+        let n = reader.read(&mut buf).await?;
         println!("reading {} bytes: {:?}", n, &buf[..n]);
     }
 }

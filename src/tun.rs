@@ -5,11 +5,11 @@ use crate::linux::params::Params;
 use crate::result::Result;
 use async_std::fs::File;
 use async_std::fs::OpenOptions;
-#[cfg(target_os = "linux")]
-use async_std::os::unix::io::{AsRawFd, FromRawFd};
+use async_std::io::{BufReader, BufWriter};
+#[cfg(target_family = "unix")]
+use async_std::os::unix::io::{AsRawFd, RawFd};
 use async_std::sync::Arc;
 use std::net::Ipv4Addr;
-use std::ops::{Deref, DerefMut};
 
 /// Represents a Tun/Tap device. Use [`TunBuilder`](struct.TunBuilder.html) to create a new instance of [`Tun`](struct.Tun.html).
 pub struct Tun {
@@ -73,8 +73,9 @@ impl Tun {
     /// Creates a new instance of Tun/Tap device.
     pub(crate) async fn new(params: Params) -> Result<Self> {
         let (files, iface) = Self::alloc(params, 1).await?;
+        let file = files.into_iter().next().unwrap();
         Ok(Self {
-            file: files.into_iter().next().unwrap(),
+            file: file,
             iface: Arc::new(iface),
         })
     }
@@ -128,33 +129,26 @@ impl Tun {
     pub fn flags(&self) -> Result<i16> {
         self.iface.flags(None)
     }
-}
 
-impl Clone for Tun {
-    #[cfg(target_os = "linux")]
-    fn clone(&self) -> Self {
-        Self {
-            file: unsafe { File::from_raw_fd(self.file.as_raw_fd()) },
-            iface: self.iface.clone(),
-        }
+    /// Splits self to reader and writer pairs.
+    pub fn split(&self) -> (BufReader<&File>, BufWriter<&File>) {
+        (BufReader::new(&self.file), BufWriter::new(&self.file))
     }
 
-    #[cfg(not(any(target_os = "linux")))]
-    fn clone(&self) -> Self {
-        unimplemented!()
+    /// Returns a reader to read from tun.
+    pub fn reader(&self) -> BufReader<&File> {
+        BufReader::new(&self.file)
     }
-}
 
-impl Deref for Tun {
-    type Target = File;
-
-    fn deref(&self) -> &Self::Target {
-        &self.file
+    /// Returns a writer to write to tun.
+    pub fn writer(&self) -> BufWriter<&File> {
+        BufWriter::new(&self.file)
     }
 }
 
-impl DerefMut for Tun {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.file
+#[cfg(target_family = "unix")]
+impl AsRawFd for Tun {
+    fn as_raw_fd(&self) -> RawFd {
+        self.file.as_raw_fd()
     }
 }

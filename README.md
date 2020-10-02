@@ -17,7 +17,7 @@ use async_tun::TunBuilder;
 use std::net::Ipv4Addr;
 
 async fn async_main() -> Result<()> {
-    let mut tun = TunBuilder::new()
+    let tun = TunBuilder::new()
         .name("")            // if name is empty, then it is set by kernel.
         .tap(false)          // false (default): TUN, true: TAP.
         .packet_info(false)  // false: IFF_NO_PI, default is true.
@@ -27,9 +27,10 @@ async fn async_main() -> Result<()> {
 
     println!("tun created, name: {}, fd: {}", tun.name(), tun.as_raw_fd());
 
+    let mut reader = tun.reader();
     let mut buf = [0u8; 1024];
     loop {
-        let n = tun.read(&mut buf).await?;
+        let n = reader.read(&mut buf).await?;
         println!("reading {} bytes: {:?}", n, &buf[..n]);
     }
 }

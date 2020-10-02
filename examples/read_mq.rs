@@ -42,29 +42,32 @@ async fn async_main() -> Result<()> {
     println!("---------------------");
 
     let mut tuns = tuns.into_iter();
-    let mut tun0 = tuns.next().unwrap();
-    let mut tun1 = tuns.next().unwrap();
-    let mut tun2 = tuns.next().unwrap();
+    let tun0 = tuns.next().unwrap();
+    let tun1 = tuns.next().unwrap();
+    let tun2 = tuns.next().unwrap();
 
     task::spawn(async move {
+        let mut reader = tun0.reader();
         let mut buf = [0u8; 1024];
         loop {
-            let n = tun0.read(&mut buf).await.unwrap();
+            let n = reader.read(&mut buf).await.unwrap();
             println!("reading {} bytes from tuns[0]: {:?}", n, &buf[..n]);
         }
     });
 
     task::spawn(async move {
+        let mut reader = tun1.reader();
         let mut buf = [0u8; 1024];
         loop {
-            let n = tun1.read(&mut buf).await.unwrap();
+            let n = reader.read(&mut buf).await.unwrap();
             println!("reading {} bytes from tuns[1]: {:?}", n, &buf[..n]);
         }
     });
 
+    let mut reader = tun2.reader();
     let mut buf = [0u8; 1024];
     loop {
-        let n = tun2.read(&mut buf).await.unwrap();
+        let n = reader.read(&mut buf).await.unwrap();
         println!("reading {} bytes from tuns[2]: {:?}", n, &buf[..n]);
     }
 }
