@@ -14,4 +14,4 @@ jobs:
     - name: Build the crate
       run: |
         cargo build -j`nproc`
-        cargo build -j`nproc` --features use-tokio
+        cargo build -j`nproc` --features use-tokio --no-default-features
