@@ -78,8 +78,8 @@ fn main() -> Result<()> {
 
 - [`read`](examples/read.rs): reading from tun using `async-std`.
 - [`read-mq`](examples/read-mq.rs): reading from multi-queue tun using `async-std`.
-- [`read-tokio`](examples/read-tokio.rs): reading from tun using `tokio`. It should be run with `use-tokio` feature:
+- [`read-tokio`](examples/read-tokio.rs): reading from tun using `tokio`. It should be run with `tokio` feature:
 
 ```bash
-➜  cargo run --example read-tokio --no-default-features --features use-tokio
+➜  cargo run --example read-tokio --no-default-features --features tokio
 ```
