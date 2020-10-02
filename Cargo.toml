@@ -1,6 +1,6 @@
 [package]
 name = "async-tun"
-version = "0.6.0"
+version = "0.7.0"
 authors = ["Navid <yaa110@gmail.com>"]
 edition = "2018"
 homepage = "https://github.com/yaa110/async-tun"
@@ -10,12 +10,16 @@ license = "MIT OR Apache-2.0"
 readme = "README.md"
 description = "Asynchronous allocation of TUN/TAP devices"
 categories = ["asynchronous", "network-programming"]
-keywords = ["tun", "tap", "async", "async-std", "interface"]
+keywords = ["tun", "tap", "async", "async-std", "tokio"]
 
 [dependencies]
 async-std = "1.6"
 libc = "0.2"
 nix = "0.18"
+tokio = { version = "0.2", optional = true, features = ["fs", "io-util", "rt-threaded", "macros"] }
 
 [build-dependencies]
 bindgen = "0.55"
+
+[features]
+use-tokio = ["tokio"]

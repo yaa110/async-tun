@@ -3,13 +3,29 @@ use crate::linux::interface::Interface;
 #[cfg(target_os = "linux")]
 use crate::linux::params::Params;
 use crate::result::Result;
+#[cfg(not(feature = "use-tokio"))]
 use async_std::fs::File;
+#[cfg(not(feature = "use-tokio"))]
 use async_std::fs::OpenOptions;
+#[cfg(not(feature = "use-tokio"))]
 use async_std::io::{BufReader, BufWriter};
 #[cfg(target_family = "unix")]
+#[cfg(not(feature = "use-tokio"))]
 use async_std::os::unix::io::{AsRawFd, RawFd};
+#[cfg(not(feature = "use-tokio"))]
 use async_std::sync::Arc;
 use std::net::Ipv4Addr;
+#[cfg(target_family = "unix")]
+#[cfg(feature = "use-tokio")]
+use std::os::unix::io::{AsRawFd, RawFd};
+#[cfg(feature = "use-tokio")]
+use std::sync::Arc;
+#[cfg(feature = "use-tokio")]
+use tokio::fs::File;
+#[cfg(feature = "use-tokio")]
+use tokio::fs::OpenOptions;
+#[cfg(feature = "use-tokio")]
+use tokio::io::{BufReader, BufWriter};
 
 /// Represents a Tun/Tap device. Use [`TunBuilder`](struct.TunBuilder.html) to create a new instance of [`Tun`](struct.Tun.html).
 pub struct Tun {
@@ -75,7 +91,7 @@ impl Tun {
         let (files, iface) = Self::alloc(params, 1).await?;
         let file = files.into_iter().next().unwrap();
         Ok(Self {
-            file: file,
+            file,
             iface: Arc::new(iface),
         })
     }
@@ -131,16 +147,27 @@ impl Tun {
     }
 
     /// Splits self to reader and writer pairs.
+    #[cfg(not(feature = "use-tokio"))]
     pub fn split(&self) -> (BufReader<&File>, BufWriter<&File>) {
         (BufReader::new(&self.file), BufWriter::new(&self.file))
     }
 
+    /// Splits self to reader and writer pairs.
+    #[cfg(feature = "use-tokio")]
+    pub async fn split(self) -> Result<(BufReader<File>, BufWriter<File>)> {
+        let reader = self.file.try_clone().await?;
+        let writer = self.file;
+        Ok((BufReader::new(reader), BufWriter::new(writer)))
+    }
+
     /// Returns a reader to read from tun.
+    #[cfg(not(feature = "use-tokio"))]
     pub fn reader(&self) -> BufReader<&File> {
         BufReader::new(&self.file)
     }
 
     /// Returns a writer to write to tun.
+    #[cfg(not(feature = "use-tokio"))]
     pub fn writer(&self) -> BufWriter<&File> {
         BufWriter::new(&self.file)
     }
