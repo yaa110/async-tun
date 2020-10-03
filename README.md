@@ -2,7 +2,7 @@
 
 [![Build](https://github.com/yaa110/async-tun/workflows/Build/badge.svg)](https://github.com/yaa110/async-tun/actions) [![crates.io](https://img.shields.io/crates/v/async-tun.svg)](https://crates.io/crates/async-tun) [![Documentation](https://img.shields.io/badge/docs-async--tun-blue.svg)](https://docs.rs/async-tun) [![examples](https://img.shields.io/badge/examples-async--tun-blue.svg)](examples)
 
-Asynchronous allocation of TUN/TAP devices in Rust using [`async-std`](https://crates.io/crates/async-std).
+Asynchronous allocation of TUN/TAP devices in Rust using [`async-std`](https://crates.io/crates/async-std). Use [tokio-tun](https://crates.io/crates/tokio-tun) for `tokio` version.
 
 ## Getting Started
 
@@ -69,11 +69,12 @@ fn main() -> Result<()> {
 
 - [x] Linux
 - [ ] FreeBSD
-- [ ] OpenBSD
-- [ ] NetBSD
 - [ ] Android
 - [ ] OSX
 - [ ] iOS
-- [ ] Solaris
 - [ ] Windows
-- [ ] QNX
+
+## Examples
+
+- [`read`](examples/read.rs): Split tun to (reader, writer) pair and read packets from reader.
+- [`read-mq`](examples/read-mq.rs): Read from multi-queue tun.

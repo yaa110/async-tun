@@ -39,7 +39,7 @@ async fn async_main() -> Result<()> {
     println!("ping 10.1.0.2 to test");
     println!("---------------------");
 
-    let mut reader = tun.reader();
+    let (mut reader, mut _writer) = tun.split();
 
     let mut buf = [0u8; 1024];
     loop {
