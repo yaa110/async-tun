@@ -9,13 +9,6 @@ Asynchronous allocation of TUN/TAP devices in Rust using [`async-std`](https://c
 - Create a tun device using `TunBuilder` and read from it in a loop:
 
 ```rust
-use async_std::os::unix::io::AsRawFd;
-use async_std::prelude::*;
-use async_std::task;
-use async_tun::result::Result;
-use async_tun::TunBuilder;
-use std::net::Ipv4Addr;
-
 async fn async_main() -> Result<()> {
     let tun = TunBuilder::new()
         .name("")            // if name is empty, then it is set by kernel.
