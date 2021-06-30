@@ -1,3 +1,4 @@
+use super::address::EthernetAddr;
 use super::result::Result;
 use super::tun::Tun;
 #[cfg(target_os = "linux")]
@@ -20,6 +21,7 @@ pub struct TunBuilder<'a> {
     destination: Option<Ipv4Addr>,
     broadcast: Option<Ipv4Addr>,
     netmask: Option<Ipv4Addr>,
+    mac: Option<EthernetAddr>,
 }
 
 impl<'a> Default for TunBuilder<'a> {
@@ -37,6 +39,7 @@ impl<'a> Default for TunBuilder<'a> {
             destination: None,
             broadcast: None,
             netmask: None,
+            mac: None,
         }
     }
 }
@@ -107,6 +110,12 @@ impl<'a> TunBuilder<'a> {
         self
     }
 
+    /// Sets Ethernet MAC address of device (for tap mode).
+    pub fn mac(mut self, mac: EthernetAddr) -> Self {
+        self.mac = Some(mac);
+        self
+    }
+
     /// Makes the device persistent.
     pub fn persist(mut self) -> Self {
         self.persist = true;
@@ -156,6 +165,7 @@ impl<'a> From<TunBuilder<'a>> for Params {
             destination: builder.destination,
             broadcast: builder.broadcast,
             netmask: builder.netmask,
+            mac: builder.mac,
         }
     }
 

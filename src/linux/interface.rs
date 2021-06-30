@@ -1,6 +1,8 @@
 use super::request::ifreq;
+use crate::address::EthernetAddr;
 use crate::linux::address::Ipv4AddrExt;
 use crate::result::Result;
+use std::convert::TryInto;
 use std::net::Ipv4Addr;
 
 nix::ioctl_write_int!(tunsetiff, b'T', 202);
@@ -11,6 +13,7 @@ nix::ioctl_write_int!(tunsetgroup, b'T', 206);
 nix::ioctl_write_ptr_bad!(siocsifmtu, libc::SIOCSIFMTU, ifreq);
 nix::ioctl_write_ptr_bad!(siocsifflags, libc::SIOCSIFFLAGS, ifreq);
 nix::ioctl_write_ptr_bad!(siocsifaddr, libc::SIOCSIFADDR, ifreq);
+nix::ioctl_write_ptr_bad!(siocsifhwaddr, libc::SIOCSIFHWADDR, ifreq);
 nix::ioctl_write_ptr_bad!(siocsifdstaddr, libc::SIOCSIFDSTADDR, ifreq);
 nix::ioctl_write_ptr_bad!(siocsifbrdaddr, libc::SIOCSIFBRDADDR, ifreq);
 nix::ioctl_write_ptr_bad!(siocsifnetmask, libc::SIOCSIFNETMASK, ifreq);
@@ -18,6 +21,7 @@ nix::ioctl_write_ptr_bad!(siocsifnetmask, libc::SIOCSIFNETMASK, ifreq);
 nix::ioctl_read_bad!(siocgifmtu, libc::SIOCGIFMTU, ifreq);
 nix::ioctl_read_bad!(siocgifflags, libc::SIOCGIFFLAGS, ifreq);
 nix::ioctl_read_bad!(siocgifaddr, libc::SIOCGIFADDR, ifreq);
+nix::ioctl_read_bad!(siocgifhwaddr, libc::SIOCGIFHWADDR, ifreq);
 nix::ioctl_read_bad!(siocgifdstaddr, libc::SIOCGIFDSTADDR, ifreq);
 nix::ioctl_read_bad!(siocgifbrdaddr, libc::SIOCGIFBRDADDR, ifreq);
 nix::ioctl_read_bad!(siocgifnetmask, libc::SIOCGIFNETMASK, ifreq);
@@ -81,6 +85,17 @@ impl Interface {
         }
         unsafe { siocgifaddr(self.socket, &mut req) }?;
         Ok(unsafe { Ipv4Addr::from_address(req.ifr_ifru.ifru_addr) })
+    }
+
+    pub fn mac(&self, address: Option<EthernetAddr>) -> Result<EthernetAddr> {
+        let mut req = ifreq::new(self.name());
+        if let Some(address) = address {
+            req.ifr_ifru.ifru_hwaddr = address.into();
+            unsafe { siocsifhwaddr(self.socket, &req) }?;
+            return Ok(address);
+        }
+        unsafe { siocgifhwaddr(self.socket, &mut req) }?;
+        Ok(unsafe { req.ifr_ifru.ifru_hwaddr.try_into()? })
     }
 
     pub fn destination(&self, dst: Option<Ipv4Addr>) -> Result<Ipv4Addr> {

@@ -1,3 +1,4 @@
+use crate::address::EthernetAddr;
 #[cfg(target_os = "linux")]
 use crate::linux::interface::Interface;
 #[cfg(target_os = "linux")]
@@ -55,6 +56,9 @@ impl Tun {
         }
         if let Some(broadcast) = params.broadcast {
             iface.broadcast(Some(broadcast))?;
+        }
+        if let Some(mac) = params.mac {
+            iface.mac(Some(mac))?;
         }
         if params.persist {
             iface.persist()?;
@@ -123,6 +127,11 @@ impl Tun {
     /// Returns the IPv4 netmask address of MTU.
     pub fn netmask(&self) -> Result<Ipv4Addr> {
         self.iface.netmask(None)
+    }
+
+    /// Returns to Ethernet MAC address.
+    pub fn mac(&self) -> Result<EthernetAddr> {
+        self.iface.mac(None)
     }
 
     /// Returns the flags of MTU.

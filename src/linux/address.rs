@@ -1,4 +1,6 @@
 use super::request::sockaddr;
+use crate::address::EthernetAddr;
+use std::convert::TryFrom;
 use std::mem;
 use std::net::Ipv4Addr;
 
@@ -34,5 +36,45 @@ impl Ipv4AddrExt for Ipv4Addr {
     fn from_address(addr: sockaddr) -> Self {
         let sock: libc::sockaddr_in = unsafe { mem::transmute(addr) };
         ntoh(sock.sin_addr.s_addr).into()
+    }
+}
+
+impl Into<sockaddr> for EthernetAddr {
+    fn into(self) -> sockaddr {
+        let mut addr: [std::os::raw::c_char; 14usize] = [0; 14];
+        addr[..6].copy_from_slice(unsafe { &*(self.as_bytes() as *const [u8] as *const [i8]) });
+        sockaddr {
+            sa_family: libc::ARPHRD_ETHER,
+            sa_data: addr,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum EthernetAddrError {
+    WrongType(std::os::raw::c_ushort),
+}
+
+impl std::fmt::Display for EthernetAddrError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::WrongType(t) => write!(f, "Incorrect address family: {}", t),
+        }
+    }
+}
+
+impl std::error::Error for EthernetAddrError {}
+
+impl TryFrom<sockaddr> for EthernetAddr {
+    type Error = EthernetAddrError;
+
+    fn try_from(addr: sockaddr) -> Result<Self, Self::Error> {
+        if addr.sa_family != libc::ARPHRD_ETHER {
+            return Err(EthernetAddrError::WrongType(addr.sa_family));
+        }
+
+        let mut a: [u8; 6] = [0; 6];
+        a.copy_from_slice(unsafe { &*(&addr.sa_data[..6] as *const [i8] as *const [u8]) });
+        Ok(EthernetAddr::from(a))
     }
 }
