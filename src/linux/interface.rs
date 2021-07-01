@@ -1,8 +1,7 @@
 use super::request::ifreq;
-use crate::address::EthernetAddr;
 use crate::linux::address::Ipv4AddrExt;
 use crate::result::Result;
-use std::convert::TryInto;
+use mac_address::MacAddress;
 use std::net::Ipv4Addr;
 
 nix::ioctl_write_int!(tunsetiff, b'T', 202);
@@ -87,17 +86,6 @@ impl Interface {
         Ok(unsafe { Ipv4Addr::from_address(req.ifr_ifru.ifru_addr) })
     }
 
-    pub fn mac(&self, address: Option<EthernetAddr>) -> Result<EthernetAddr> {
-        let mut req = ifreq::new(self.name());
-        if let Some(address) = address {
-            req.ifr_ifru.ifru_hwaddr = address.into();
-            unsafe { siocsifhwaddr(self.socket, &req) }?;
-            return Ok(address);
-        }
-        unsafe { siocgifhwaddr(self.socket, &mut req) }?;
-        Ok(unsafe { req.ifr_ifru.ifru_hwaddr.try_into()? })
-    }
-
     pub fn destination(&self, dst: Option<Ipv4Addr>) -> Result<Ipv4Addr> {
         let mut req = ifreq::new(self.name());
         if let Some(dst) = dst {
@@ -128,6 +116,13 @@ impl Interface {
             unsafe { siocsifflags(self.socket, &req) }?;
         }
         Ok(unsafe { req.ifr_ifru.ifru_flags })
+    }
+
+    pub fn set_mac(&self, address: MacAddress) -> Result<()> {
+        let mut req = ifreq::new(self.name());
+        req.ifr_ifru.ifru_hwaddr = address.into();
+        unsafe { siocsifhwaddr(self.socket, &req) }?;
+        Ok(())
     }
 
     pub fn owner(&self, owner: i32) -> Result<()> {

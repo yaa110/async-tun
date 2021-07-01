@@ -1,4 +1,4 @@
-use crate::address::EthernetAddr;
+use mac_address::MacAddress;
 use std::net::Ipv4Addr;
 
 /// Represents parameters for creating a new Tun/Tap device on Linux.
@@ -15,5 +15,5 @@ pub struct Params {
     pub destination: Option<Ipv4Addr>,
     pub broadcast: Option<Ipv4Addr>,
     pub netmask: Option<Ipv4Addr>,
-    pub mac: Option<EthernetAddr>,
+    pub mac: Option<MacAddress>,
 }

@@ -1,10 +1,10 @@
-use super::address::EthernetAddr;
 use super::result::Result;
 use super::tun::Tun;
 #[cfg(target_os = "linux")]
 use crate::linux::params::Params;
 use core::convert::From;
 use libc::{IFF_NO_PI, IFF_TAP, IFF_TUN};
+use mac_address::MacAddress;
 use std::net::Ipv4Addr;
 
 /// Represents a factory to build new instances of [`Tun`](struct.Tun.html).
@@ -21,7 +21,7 @@ pub struct TunBuilder<'a> {
     destination: Option<Ipv4Addr>,
     broadcast: Option<Ipv4Addr>,
     netmask: Option<Ipv4Addr>,
-    mac: Option<EthernetAddr>,
+    mac: Option<MacAddress>,
 }
 
 impl<'a> Default for TunBuilder<'a> {
@@ -111,7 +111,7 @@ impl<'a> TunBuilder<'a> {
     }
 
     /// Sets Ethernet MAC address of device (for tap mode).
-    pub fn mac(mut self, mac: EthernetAddr) -> Self {
+    pub fn mac(mut self, mac: MacAddress) -> Self {
         self.mac = Some(mac);
         self
     }

@@ -1,4 +1,3 @@
-use crate::address::EthernetAddr;
 #[cfg(target_os = "linux")]
 use crate::linux::interface::Interface;
 #[cfg(target_os = "linux")]
@@ -10,6 +9,7 @@ use async_std::io::{BufReader, BufWriter};
 #[cfg(target_family = "unix")]
 use async_std::os::unix::io::{AsRawFd, RawFd};
 use async_std::sync::Arc;
+use mac_address::{mac_address_by_name, MacAddress};
 use std::net::Ipv4Addr;
 
 /// Represents a Tun/Tap device. Use [`TunBuilder`](struct.TunBuilder.html) to create a new instance of [`Tun`](struct.Tun.html).
@@ -58,7 +58,7 @@ impl Tun {
             iface.broadcast(Some(broadcast))?;
         }
         if let Some(mac) = params.mac {
-            iface.mac(Some(mac))?;
+            iface.set_mac(mac)?;
         }
         if params.persist {
             iface.persist()?;
@@ -130,8 +130,8 @@ impl Tun {
     }
 
     /// Returns to Ethernet MAC address.
-    pub fn mac(&self) -> Result<EthernetAddr> {
-        self.iface.mac(None)
+    pub fn mac(&self) -> Result<Option<MacAddress>> {
+        Ok(mac_address_by_name(self.name())?)
     }
 
     /// Returns the flags of MTU.
