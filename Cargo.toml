@@ -15,4 +15,5 @@ keywords = ["tun", "tap", "async", "async-std", "interface"]
 [dependencies]
 async-std = "1.8"
 libc = "0.2"
+mac_address = "1.1"
 nix = "0.21"

@@ -9,6 +9,7 @@ use async_std::io::{BufReader, BufWriter};
 #[cfg(target_family = "unix")]
 use async_std::os::unix::io::{AsRawFd, RawFd};
 use async_std::sync::Arc;
+use mac_address::{mac_address_by_name, MacAddress};
 use std::net::Ipv4Addr;
 
 /// Represents a Tun/Tap device. Use [`TunBuilder`](struct.TunBuilder.html) to create a new instance of [`Tun`](struct.Tun.html).
@@ -55,6 +56,9 @@ impl Tun {
         }
         if let Some(broadcast) = params.broadcast {
             iface.broadcast(Some(broadcast))?;
+        }
+        if let Some(mac) = params.mac {
+            iface.set_mac(mac)?;
         }
         if params.persist {
             iface.persist()?;
@@ -123,6 +127,11 @@ impl Tun {
     /// Returns the IPv4 netmask address of MTU.
     pub fn netmask(&self) -> Result<Ipv4Addr> {
         self.iface.netmask(None)
+    }
+
+    /// Returns to Ethernet MAC address.
+    pub fn mac(&self) -> Result<Option<MacAddress>> {
+        Ok(mac_address_by_name(self.name())?)
     }
 
     /// Returns the flags of MTU.
