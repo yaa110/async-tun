@@ -1,8 +1,8 @@
 [package]
 name = "async-tun"
-version = "0.9.0"
+version = "0.10.0"
 authors = ["Navid <yaa110@gmail.com>"]
-edition = "2018"
+edition = "2021"
 homepage = "https://github.com/yaa110/async-tun"
 repository = "https://github.com/yaa110/async-tun"
 documentation = "https://docs.rs/async-tun"
@@ -13,7 +13,7 @@ categories = ["asynchronous", "network-programming"]
 keywords = ["tun", "tap", "async", "async-std", "interface"]
 
 [dependencies]
-async-std = "1.8"
+async-std = "1.10"
 libc = "0.2"
 mac_address = "1.1"
-nix = "0.21"
+nix = "0.23"

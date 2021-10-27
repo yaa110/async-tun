@@ -79,7 +79,7 @@ impl Tun {
         let (files, iface) = Self::alloc(params, 1).await?;
         let file = files.into_iter().next().unwrap();
         Ok(Self {
-            file: file,
+            file,
             iface: Arc::new(iface),
         })
     }
